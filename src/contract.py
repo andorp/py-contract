@@ -219,6 +219,52 @@ def prods_test():
     x = int_str_t({'i': 5, 's': "hello"})
     print x
 
+# Coproduct
+
+## Given a list of contracts creates a new contract for a
+## 2-element list where item 0 is an index and item 1
+## is a value satisfying the contract at that index
+## in the array
+def coprodn(cs):
+    list_of(func_t)(cs)
+    length = len(cs)
+    def apply(choice):
+        list_t(choice)
+        int_t(choice[0])
+        if len(choice) != 2:
+            raise TypeError("Expected [int_t, any_t]")
+        if choice[0] >= length:
+            raise TypeError("Tag out of range.")
+        return [choice[0], cs[choice[0]](choice[1])]
+    return apply
+
+def coprodn_test():
+    int_str_t = coprodn([int_t, string_t])
+    x = int_str_t([0, 1])
+    print x
+    x = int_str_t([1, "hello"])
+    print x
+
+def coprods(cs):
+    dict_of(func_t)(cs)
+    def apply(choice):
+        list_t(choice)
+        string_t(choice[0])
+        if len(choice) != 2:
+            raise TypeError("Expected [int_t, any_t]")
+        if choice[0] not in cs:
+            raise TypeError("Unknown tag: {tag}".format(tag=choice[0]))
+        return [choice[0], cs[choice[0]](choice[1])]
+        pass
+    return apply
+
+def coprods_test():
+    int_str_t = coprods({ 'i': int_t, 's': string_t })
+    x = int_str_t(['i', 1])
+    print x
+    x = int_str_t(['s', "hello"])
+    print x
+
 def main():
     maybe_test()
     listOfFlatten_test()
@@ -226,6 +272,8 @@ def main():
     maybe_monad_test()
     prodn_test()
     prods_test()
+    coprodn_test()
+    coprods_test()
 
 if __name__ == "__main__":
     main()
