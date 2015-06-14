@@ -89,32 +89,32 @@ def repeat(s):
 
 def listOfUnit(c):
     def wrap(x):
-        x = c(x)
-        return list_of(c)([x])
+        x = no_times(list_of)(c)(x)
+        return once(list_of)(c)([x])
     return wrap
 
 def maybeUnit(c):
     def wrap(x):
-        x = c(x)
-        return maybe(c)(some(x))
+        x = no_times(maybe)(c)(x)
+        return once(maybe)(c)(some(x))
     return wrap
 
 def listOfFlatten(c):
     def flatten(llx):
-        llx = list_of(list_of(c))(llx) # [[1], [1,4]]
+        llx = twice(list_of)(c)(llx) # [[1], [1,4]]
         result = []
         for xs in llx:
             result = result + xs
-        return list_of(c)(result)
+        return once(list_of)(c)(result)
     return flatten
 
 def maybeFlatten(c):
     def flatten(mmx):
-        mmx = maybe(maybe(c))(mmx)
+        mmx = twice(maybe)(c)(mmx)
         result = mmx
         if isinstance(mmx, Just):
             result = result.x
-        return result
+        return once(maybe)(c)(result)
     return flatten
 
 def maybe_test():
@@ -137,7 +137,7 @@ def twice(functor):
 def once(functor):
     return functor
 
-def noTimes(functor):
+def no_times(functor):
     def apply(c):
         return c
     return apply
