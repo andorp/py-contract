@@ -2,10 +2,13 @@
 """ A contract consits of a type check of a given variable """
 
 import array
+import types
 
-# Category consists of
-# - contract as an object
-# - morphism as a guarded functions
+# Category
+
+## Category consists of
+## - contract as an object
+## - guarded functions as a morphism
 
 # A contract that checks the parameter for a given type
 def type_of(t):
@@ -15,12 +18,12 @@ def type_of(t):
         return x
     return contract
 
-# A special contract that does not checks the type of the
-# parameter.
+## A special contract that does not checks the type of the
+## parameter.
 def any_t(x):
     return x
 
-# A guarded function, expects a guarded input and returns a guarded output
+## A guarded function, expects a guarded input and returns a guarded output
 def inc(x):
     x = int_t(x)
     return int_t(x + 1)
@@ -31,22 +34,34 @@ unicode_t = type_of(unicode)
 bool_t = type_of(bool)
 int_t = type_of(int)
 object_t = type_of(object)
+func_t = type_of(types.FunctionType)
 
 array_t = type_of(array.array)
 list_t = type_of(list)
 dict_t = type_of(dict)
 
-# List functor acting on contract, if we have a morhishm as a guarded
-# function, as the guarded function checks the input type of its elements
-# It produces new objects and new morhisms
+## List functor acting on contract, if we have a morhishm as a guarded
+## function, as the guarded function checks the input type of its elements
+## It produces new objects and new morhisms
 def list_of(c):
     def fmap(l):
         return map(c,list_t(l))
     return fmap
 
+## Dict functor acting on contract, if we have a morhism as a guarded
+## function, as the guard function checks the input type of its value elements
+def dict_of(c):
+    def fmap(d):
+        dict_t(d)
+        result = {}
+        for k in d:
+            result[k] = c(d[k])
+        return result
+    return fmap
+
 # Maybe
 
-# Free pointed set in category theory, Maybe in Haskell, Option in Scala
+## Free pointed set in category theory, Maybe in Haskell, Option in Scala
 class Maybe:
     def getOrElse(self, x):
         if isinstance(self, Just):
@@ -72,7 +87,7 @@ just = lambda x: Just(x)
 
 # Maybe functor
 
-# Functor based on the Maybe data
+## Functor based on the Maybe data
 def maybe(c):
     def fmap(m):
         if isinstance(m, Just):
@@ -83,12 +98,12 @@ def maybe(c):
             raise TypeError('Expected Nothing or Just(value)')
     return fmap
 
-# One other morphism between contracts(object in our category)
+## One other morphism between contracts(object in our category)
 def repeat(s):
     s = string_t(s)
     return string_t(s + s)
 
-## Unit and flatten
+# Unit and flatten
 
 def listOfUnit(c):
     def wrap(x):
@@ -163,11 +178,54 @@ def maybe_monad_test():
         )))
     print r
 
+# Product
+
+## Given a list of contracts, creates a contract for
+## a list whose elements satisfy the respective contracts.
+def prodn(cs):
+    # Checks if the argument is a list of contracts
+    list_of(func_t)(cs)
+    length = len(cs)
+    def apply(args):
+        list_t(args)
+        if (len(args) != length):
+            raise TypeError("Expected {length} arguments".format(length=length))
+        result = []
+        for i in range(0, length):
+            result.append(cs[i](args[i]))
+        return result
+    return apply
+
+def prodn_test():
+    int_str_t = prodn([int_t, string_t])
+    x = int_str_t([5, "hello"])
+    print x
+
+## Given a dict of contracts, creates a contract fo
+## a dict whose elements satisfy the respective contracts
+def prods(cs):
+    # Checks if the argument is a dict of contracts
+    dict_of(func_t)(cs)
+    def apply(args):
+        dict_t(args)
+        result = {}
+        for k in cs:
+            result[k] = cs[k](args[k])
+        return result
+    return apply
+
+def prods_test():
+    int_str_t = prods({'i': int_t, 's': string_t})
+    x = int_str_t({'i': 5, 's': "hello"})
+    print x
+
 def main():
     maybe_test()
     listOfFlatten_test()
     maybeFlatten_test()
     maybe_monad_test()
+    prodn_test()
+    prods_test()
 
 if __name__ == "__main__":
     main()
