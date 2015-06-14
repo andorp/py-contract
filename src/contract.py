@@ -57,6 +57,9 @@ class Maybe:
     def flatten(self):
         return maybeFlatten(any_t)(self)
 
+    def map(self,c):
+        return maybe(c)(self)
+
 class Nothing(Maybe):
     def __str__(self): return "Nothing"
 
@@ -142,10 +145,29 @@ def no_times(functor):
         return c
     return apply
 
+# Monad
+
+class Monad:
+    def flatMap(self, c):
+        return self.map(c).flatten()
+
+Maybe.__bases__ += (Monad,)
+
+def maybe_monad_test():
+    xs = just(4)
+    ys = nothing
+    zs = just(5)
+    r = xs.flatMap(lambda x:
+        ys.flatMap(lambda y:
+        zs.map(lambda z: (x * y) + z
+        )))
+    print r
+
 def main():
     maybe_test()
     listOfFlatten_test()
     maybeFlatten_test()
+    maybe_monad_test()
 
 if __name__ == "__main__":
     main()
