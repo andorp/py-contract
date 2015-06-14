@@ -265,6 +265,14 @@ def coprods_test():
     x = int_str_t(['s', "hello"])
     print x
 
+## Alternative implementation of the maybe monad
+def maybe_c(c):
+    return coprods(
+        { 'none': prodn([])
+        , 'some': c
+        })
+## maybe_c(int_t) accepts ['none', []] or ['some', 4]
+
 def main():
     maybe_test()
     listOfFlatten_test()
