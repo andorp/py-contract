@@ -44,6 +44,8 @@ def list_of(c):
         return map(c,list_t(l))
     return fmap
 
+# Maybe
+
 # Free pointed set in category theory, Maybe in Haskell, Option in Scala
 class Maybe:
     def getOrElse(self, x):
@@ -51,6 +53,9 @@ class Maybe:
             return self.x
         else:
             return x
+
+    def flatten(self):
+        return maybeFlatten(any_t)(self)
 
 class Nothing(Maybe):
     def __str__(self): return "Nothing"
@@ -61,6 +66,8 @@ class Just(Maybe):
 
 nothing = Nothing()
 just = lambda x: Just(x)
+
+# Maybe functor
 
 # Functor based on the Maybe data
 def maybe(c):
@@ -78,10 +85,67 @@ def repeat(s):
     s = string_t(s)
     return string_t(s + s)
 
-def main():
+## Unit and flatten
+
+def listOfUnit(c):
+    def wrap(x):
+        x = c(x)
+        return list_of(c)([x])
+    return wrap
+
+def maybeUnit(c):
+    def wrap(x):
+        x = c(x)
+        return maybe(c)(some(x))
+    return wrap
+
+def listOfFlatten(c):
+    def flatten(llx):
+        llx = list_of(list_of(c))(llx) # [[1], [1,4]]
+        result = []
+        for xs in llx:
+            result = result + xs
+        return list_of(c)(result)
+    return flatten
+
+def maybeFlatten(c):
+    def flatten(mmx):
+        mmx = maybe(maybe(c))(mmx)
+        result = mmx
+        if isinstance(mmx, Just):
+            result = result.x
+        return result
+    return flatten
+
+def maybe_test():
     print maybe(repeat)(nothing)
     print maybe(repeat)(just("Joe")).getOrElse("Jane")
     print maybe(repeat)(nothing).getOrElse("Jane")
+
+def listOfFlatten_test():
+    print listOfFlatten(int_t)([[1], [2,3]])
+
+def maybeFlatten_test():
+    print maybeFlatten(int_t)(just(just(3)))
+    print just(just(4)).flatten()
+
+def twice(functor):
+    def apply(c):
+        return functor(functor(c))
+    return apply
+
+def once(functor):
+    return functor
+
+def noTimes(functor):
+    def apply(c):
+        return c
+    return apply
+
+def main():
+    maybe_test()
+    listOfFlatten_test()
+    maybeFlatten_test()
 
 if __name__ == "__main__":
     main()
