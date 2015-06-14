@@ -3,16 +3,28 @@
 
 import array
 
-# Object of a contract category
+# Category consists of
+# - contract as an object
+# - morphism as a guarded functions
+
+# A contract that checks the parameter for a given type
 def type_of(t):
-    def check(x):
+    def contract(x):
         if not isinstance(x, t):
             raise TypeError('{type} is expected found {found}'.format(type=t, found=type(x)))
         return x
-    return check
+    return contract
 
+# A special contract that does not checks the type of the
+# parameter.
 def any_t(x):
     return x
+
+# A guarded function, expects a guarded input and returns a guarded output
+def inc(x):
+    x = int_t(x)
+    return int_t(x + 1)
+
 
 string_t = type_of(str)
 unicode_t = type_of(unicode)
@@ -23,12 +35,6 @@ object_t = type_of(object)
 array_t = type_of(array.array)
 list_t = type_of(list)
 dict_t = type_of(dict)
-
-# Example of a morphism, a guarded function, expects a guarded input and
-# returns a guarded output
-def inc(x):
-    x = int_t(x)
-    return int_t(x + 1)
 
 # List functor acting on contract, if we have a morhishm as a guarded
 # function, as the guarded function checks the input type of its elements
