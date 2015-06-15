@@ -277,6 +277,29 @@ def maybe_c_test():
     x = maybe_c(int_t)(['none', []])
     print x
 
+# Pullback
+
+## Given a list of function, returns a contract
+## for those array where the elements all map to the
+## some value under the given function, e.g. given
+## [f,g], we get a contract for those [x, y] for which
+## f(x) == g(y)
+def pullbackn(fs):
+    c = prodn(fs)
+    length = len(fs)
+    def pullback(args):
+        list_t(args)
+        result = c(args)
+        result_l = len(result)
+        for i in range(1, result_l):
+            if result[i] != result[i - 1]:
+                raise TypeError("Failed to match pullback contraint")
+        return result
+    return pullback
+## Example of the multiplication of matrices, the pullback
+## checks if the two matrix can be multiplied.
+## Exercise
+
 def main():
     maybe_test()
     listOfFlatten_test()
