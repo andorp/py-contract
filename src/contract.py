@@ -300,6 +300,31 @@ def pullbackn(fs):
 ## checks if the two matrix can be multiplied.
 ## Exercise
 
+# Hom functor
+
+## Creates a contract for a function whose inputs and output
+## satisfy the given contracts
+def hom(*arguments):
+    arguments = list(arguments)
+    before = prodn(list_of(func_t)(arguments[0:-1]))
+    after = func_t(arguments[-1])
+    def result(middle):
+        def wrapped(*varArgs):
+            before(list(varArgs))
+            return after(middle(*varArgs))
+        return wrapped
+    return result
+
+def repeat_i(i):
+    print i
+    return "{x}{x}".format(x=i)
+
+repeat_h = hom(int_t, string_t)(repeat_i)
+
+def hom_test():
+    x = repeat_h(3)
+    print x
+
 def main():
     maybe_test()
     listOfFlatten_test()
@@ -310,6 +335,7 @@ def main():
     coprodn_test()
     coprods_test()
     maybe_c_test()
+    hom_test()
 
 if __name__ == "__main__":
     main()
