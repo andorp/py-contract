@@ -273,6 +273,10 @@ def maybe_c(c):
         })
 ## maybe_c(int_t) accepts ['none', []] or ['some', 4]
 
+def maybe_c_test():
+    x = maybe_c(int_t)(['none', []])
+    print x
+
 def main():
     maybe_test()
     listOfFlatten_test()
@@ -282,6 +286,7 @@ def main():
     prods_test()
     coprodn_test()
     coprods_test()
+    maybe_c_test()
 
 if __name__ == "__main__":
     main()
