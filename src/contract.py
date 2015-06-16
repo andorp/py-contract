@@ -392,6 +392,21 @@ def listMonad_test():
     print l['1'](5)
     print l['*']([[2,3],[4]])
 
+# UpTo Example
+
+def upTo(x):
+    int_t(x)
+    result = []
+    for i in range(0,x):
+        result.append(i)
+    return list_of(int_t)(result)
+
+# in comprehension
+# In Scala: for ( x <- upto(5); y <- upto(x); { yield(y); })
+def upTo_test():
+    print list_of(upTo)(upTo(5))
+    print listMonad(int_t)['*'](list_of(upTo)(upTo(5)))
+
 def main():
     maybe_test()
     listOfFlatten_test()
