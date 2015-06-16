@@ -346,33 +346,20 @@ def test_mon_assoc(mon, a, b, c):
        mon['*'](mon['*'](a, b), c):
        raise Exception("Not associative")
 
-
-def strConcat(x,y):
-    return x + y
-
-def strEmpty():
-    return ""
-
 concat = monoid(
     string_t,
-    strConcat,
-    strEmpty
+    lambda x, y: x + y,
+    lambda: ""
     )
 
 def str_monoid_test():
     x = concat['*']("Hello ", "World")
     print x
 
-def add(x, y):
-    return x + y
-
-def zero():
-    return 0
-
 addition = monoid(
     int_t,
-    add,
-    zero
+    lambda x, y: x + y,
+    lambda: 0
     )
 
 def main():
