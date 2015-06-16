@@ -251,7 +251,7 @@ def coprods(cs):
         list_t(choice)
         string_t(choice[0])
         if len(choice) != 2:
-            raise TypeError("Expected [int_t, any_t]")
+            raise TypeError("Expected [string_t, any_t]")
         if choice[0] not in cs:
             raise TypeError("Unknown tag: {tag}".format(tag=choice[0]))
         return [choice[0], cs[choice[0]](choice[1])]
@@ -325,6 +325,56 @@ def hom_test():
     x = repeat_h(3)
     print x
 
+# Monoid
+
+def monoid(set, times, ident):
+    return prods({
+        't': func_t,
+        '*': hom(set, set, set),
+        '1': hom(set)
+    })({
+        't': set,
+        '*': times,
+        '1': ident
+    })
+
+def test_mon_assoc(mon, a, b, c):
+    a = mon['t'](a)
+    b = mon['t'](b)
+    c = mon['t'](c)
+    if mon['*'](a, mon['*'](b, c)) != \
+       mon['*'](mon['*'](a, b), c):
+       raise Exception("Not associative")
+
+
+def strConcat(x,y):
+    return x + y
+
+def strEmpty():
+    return ""
+
+concat = monoid(
+    string_t,
+    strConcat,
+    strEmpty
+    )
+
+def str_monoid_test():
+    x = concat['*']("Hello ", "World")
+    print x
+
+def add(x, y):
+    return x + y
+
+def zero():
+    return 0
+
+addition = monoid(
+    int_t,
+    add,
+    zero
+    )
+
 def main():
     maybe_test()
     listOfFlatten_test()
@@ -336,6 +386,7 @@ def main():
     coprods_test()
     maybe_c_test()
     hom_test()
+    str_monoid_test()
 
 if __name__ == "__main__":
     main()
