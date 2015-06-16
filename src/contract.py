@@ -362,6 +362,36 @@ addition = monoid(
     lambda: 0
     )
 
+# Monads as monoids
+
+## A monad is a monoid in the category whose
+## objects are endofunctors, and whose morphism
+## are natural transformations
+def monad(functor, times, ident):
+    def monad_t(t):
+        func_t(functor)
+        return prods({
+                't': func_t,
+                '*': hom(twice(functor)(t), functor(t)),
+                ## Times is a natural transformation between functor twice and functor once
+                ## Monoids use cartasian product as product,
+                ## Monads use tensor product which is composition to combine the functors
+                ## It is more general operation putting two things together, it is not necessary pairing
+                '1': hom(no_times(functor)(t), functor(t))
+            })({
+                't': functor(t),
+                '*': times(t),
+                '1': ident(t)
+            })
+    return monad_t
+
+listMonad = monad(list_of, listOfFlatten, listOfUnit)
+
+def listMonad_test():
+    l = listMonad(int_t)
+    print l['1'](5)
+    print l['*']([[2,3],[4]])
+
 def main():
     maybe_test()
     listOfFlatten_test()
@@ -374,6 +404,7 @@ def main():
     maybe_c_test()
     hom_test()
     str_monoid_test()
+    listMonad_test()
 
 if __name__ == "__main__":
     main()
