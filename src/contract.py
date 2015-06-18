@@ -407,6 +407,55 @@ def upTo_test():
     print list_of(upTo)(upTo(5))
     print listMonad(int_t)['*'](list_of(upTo)(upTo(5)))
 
+# Monoid homomorphism
+
+def equalizer(fs):
+    l = len(fs)
+    if l < 1:
+        raise TypeError("Equalizer can not be defined for empty set of functions")
+    def eq(x):
+        tuple = []
+        for i in range(0, l):
+            tuple.append(x)
+        return pullbackn(fs)(tuple)[0]
+    return eq
+
+# Functions between homomorhism, preserves the structure
+# of the monoid
+
+def bit_t(b):
+    if b == 0 or b == 1:
+        return b
+    else:
+        raise TypeError('Expected a bit found {found}'.format(found=b))
+
+# Constant Functor
+K = hom(any_t, hom(any_t))(lambda x: lambda: x)
+
+xor = hom(bit_t, bit_t, bit_t)(lambda x, y: bool(x) != bool(b))
+xorMonoid = monoid(bit_t, xor, K(0))
+
+add = hom(int_t, int_t, int_t)(lambda x, y: x + y)
+addMonoid = monoid(int_t, add, K(0))
+
+# Monoidal homomorhism
+parity = hom(int_t, bit_t)(lambda x: x % 2)
+
+# TODO: Check it
+## Monoidal function
+#def monFunc(m1, m2, f):
+#    return {
+#        't': hom(m1['t'], m2['t'])(f),
+#        '*': equalizer([
+#                lambda x, y: f(m1['*'](x, y)),
+#                lambda x, y: m2['*'](f(x), f(y))
+#            ]),
+#        '1': equalizer([
+#                lambda: f(m1['1']()),
+#                m2['1']
+#            ])
+#    }
+
 def main():
     maybe_test()
     listOfFlatten_test()
