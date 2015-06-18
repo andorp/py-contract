@@ -459,11 +459,37 @@ parity = hom(int_t, bit_t)(lambda x: x % 2)
 def monHom(before, after):
     def hom(middle):
         return {
-            't': hom(before.['t'], after.['t'])(middle['t']),
-            '*': hom(before.['t'], before.['t'], after.['t'])(middle['*']),
+            't': hom(before['t'], after['t'])(middle['t']),
+            '*': hom(before['t'], before['t'], after['t'])(middle['*']),
             '1': hom(after['t'])(middle['1'])
         }
     return middle
+
+# Partial orders as categories
+
+def leq(pair):
+    prodn([int_t, int_t])(pair)
+    x = pair[0]
+    y = pair[1]
+    if (x > y):
+        raise TypeError("{x} is greater than {y}".format(x=x, y=y))
+    return pair
+
+def leqHom(before, after):
+    leq(before)
+    leq(after)
+    def compose(middle):
+        leq(middle)
+        if(middle[0] != before[1]):
+            raise TypeError("Expected {x}".format(x=middle[0]))
+        if(middle[1] != after[0]):
+            raise TypeError("Expected {x}".format(x=middle[1]))
+        return [before[0], after[1]]
+    return compose
+
+def leq_test():
+    x = leqHom([3,5],[7,9])([5,7])
+    print x
 
 def main():
     maybe_test()
@@ -478,6 +504,7 @@ def main():
     hom_test()
     str_monoid_test()
     listMonad_test()
+    leq_test()
 
 if __name__ == "__main__":
     main()
