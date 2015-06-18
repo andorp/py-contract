@@ -456,6 +456,15 @@ parity = hom(int_t, bit_t)(lambda x: x % 2)
 #            ])
 #    }
 
+def monHom(before, after):
+    def hom(middle):
+        return {
+            't': hom(before.['t'], after.['t'])(middle['t']),
+            '*': hom(before.['t'], before.['t'], after.['t'])(middle['*']),
+            '1': hom(after['t'])(middle['1'])
+        }
+    return middle
+
 def main():
     maybe_test()
     listOfFlatten_test()
