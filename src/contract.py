@@ -491,6 +491,32 @@ def leq_test():
     x = leqHom([3,5],[7,9])([5,7])
     print x
 
+# Div category
+
+def div(pair):
+    prodn([int_t, int_t])(pair)
+    x = pair[0]
+    y = pair[1]
+    if ((x / y) % 1 != 0):
+        raise TypeError("{x} does not devide {y}".format(x=x, y=y))
+    return pair
+
+def divHom(before, after):
+    div(before)
+    div(after)
+    def compose(middle):
+        div(middle)
+        if(middle[0] != before[1]):
+            raise TypeError("Expected {x}".format(x=middle[0]))
+        if(middle[1] != after[0]):
+            raise TypeError("Expected {x}".format(x=middle[1]))
+        return [before[0], after[1]]
+    return compose
+
+def div_test():
+    x = divHom([3,6], [24, 96])([6, 24])
+    print x
+
 def main():
     maybe_test()
     listOfFlatten_test()
@@ -505,6 +531,7 @@ def main():
     str_monoid_test()
     listMonad_test()
     leq_test()
+    div_test()
 
 if __name__ == "__main__":
     main()
