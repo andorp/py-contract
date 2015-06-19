@@ -517,6 +517,61 @@ def div_test():
     x = divHom([3,6], [24, 96])([6, 24])
     print x
 
+# Formality around the categories
+
+def category(c, cHom):
+    return prods({
+        'c': func_t,
+        'cHom': hom(c, c, c)
+    })({
+        'c': c,
+        'cHom': cHom
+    })
+
+LEQ = category(leq, leqHom)
+DIV = category(div, divHom)
+
+def guardFunc(triple):
+    return prodn([func_t, func_t, hom(triple[0], triple[1])])(triple)
+
+def guardHom(before, after):
+    before = guardFunc(before)
+    after = guardFunc(after)
+    def compose(mmiddle):
+        middle = guardFunc(middle)
+        def f(x):
+            return [before[0], after[1], after[2](middle[2](before[2](x)))]
+        return f
+    return compose
+
+GUARD = category(guardFunc, guardHom)
+
+def mon(triple):
+    src = prods({
+        't': func_t,
+        '*': hom(triple[0]['t'], triple[0]['t'], triple[0]['t']),
+        '1': hom(triple[0]['t'])
+    })(triple[0])
+    tgt = prods({
+        't': func_t,
+        '*': hom(triple[1]['t'], triple[1]['t'], triple[1]['t']),
+        '1': hom(triple[1]['t'])
+    })(triple[1])
+    mh = hom(triple[0]['t'], triple[1]['t'])(triple[2])
+    return [src, tgt, mh]
+
+def monHom(before, after):
+    before = mon(before)
+    after = mon(after)
+    def compose(mmiddle):
+        middle = mon(middle)
+        def f(x):
+            return [before[0], after[1], after[2](middle[2](before[2](x)))]
+        return f
+    return compose
+
+MON = category(mon, monHom)
+
 def main():
     maybe_test()
     listOfFlatten_test()
