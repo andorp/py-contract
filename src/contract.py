@@ -572,6 +572,36 @@ def monHom(before, after):
 
 MON = category(mon, monHom)
 
+def addHom(before, after):
+    int_t(before)
+    int_t(after)
+    def compose(middle):
+        int_t(middle)
+        return after + middle + before
+    return compose
+
+ADD = category(int_t, addHom)
+
+def mulHom(before, after):
+    int_t(before)
+    int_t(after)
+    def compose(middle):
+        int_t(middle)
+        return after * middle * before
+    return compose
+
+MUL = category(int_t, mulHom)
+
+def fromMonoid(m):
+    def compose(before, after):
+        before = m['t'](before)
+        after = m['t'](after)
+        def f(middle):
+            middle = m['t'](middle)
+            return m['*'](after, m['*'](middle, before))
+        return f
+    return category(m['t'], compose)
+
 def main():
     maybe_test()
     listOfFlatten_test()
