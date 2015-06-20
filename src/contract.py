@@ -602,6 +602,21 @@ def fromMonoid(m):
         return f
     return category(m['t'], compose)
 
+# Monoidal functor
+
+def lazy(c):
+    return hom(c)
+
+lazyLift = K
+
+def lazyFlatten(lazyLazyX):
+    return lazyLazyX()
+
+lazyMonad = monad(lazy, lazyLift, lazyFlatten)
+
+def lazyPhi(lazyProd):
+    return map(lazyLift, list_t(lazyProd()))
+
 def main():
     maybe_test()
     listOfFlatten_test()
