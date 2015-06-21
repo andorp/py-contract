@@ -662,6 +662,39 @@ def stream_test():
     print stm[1]
     print stm[1][1]()
 
+# Continuation passing monad
+
+## Another monoidal functor
+##   continuation passing is a double negation by the Curry-Howard
+## isomorphism
+
+## CP A : (A -> Z) -> Z
+def cp(c):
+    return hom(hom(c, id), id)
+
+def cpLift(x):
+    return lambda k: k(x)
+
+## Quadruple negation to double negation
+def cpFlatten(cpCpX): # (((A -> Z) -> Z) -> Z) -> Z
+    # k : X -> Z
+    return lambda k: cpCpX(lambda l: l(k))
+
+cpMonad = monad(cp, cpLift, cpFlatten)
+
+def cpChi(k):
+    return \
+        (lambda l:
+            lambda m:
+                l(lambda c: k(lambda d: m(d(c)))))
+
+def cpPhi(cpProd):
+    prod = None
+    def assign(p):
+        prod = list_t(p)
+    cpProd(assign)
+    return map(cpLift, prod)
+
 def main():
     maybe_test()
     listOfFlatten_test()
