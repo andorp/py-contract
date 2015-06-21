@@ -656,6 +656,12 @@ def stream(c):
         ])
     })
 
+def stream_test():
+    stm = stream(int_t)(['cons', [1, K(['nil', []])]])
+    print stm
+    print stm[1]
+    print stm[1][1]()
+
 def main():
     maybe_test()
     listOfFlatten_test()
@@ -672,6 +678,7 @@ def main():
     leq_test()
     div_test()
     list_d_test()
+    stream_test()
 
 if __name__ == "__main__":
     main()
