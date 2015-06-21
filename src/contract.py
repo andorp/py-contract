@@ -630,6 +630,32 @@ def lazyPhi(lazyProd):
 # recursively and the thing is going fill up the stack
 # infinitely
 
+def list_d(c):
+    return coprods({
+        'nil': prodn([]),
+        'cons': prodn([
+            c,
+            lambda tail: list_d(c)(tail)
+        ])
+    })
+
+def list_d_test():
+    x = list_d(int_t)(['nil', []])
+    print x
+    x = list_d(int_t)(['cons', [1, ['nil', []]]])
+    print x
+    x = list_d(int_t)(['cons', [2, ['cons', [1, ['nil', []]]]]])
+    print x
+
+def stream(c):
+    return coprods({
+        'nil': prodn([]),
+        'cons': prodn([
+            c,
+            lambda tail: lazy(stream(c))(tail)
+        ])
+    })
+
 def main():
     maybe_test()
     listOfFlatten_test()
@@ -645,6 +671,7 @@ def main():
     listMonad_test()
     leq_test()
     div_test()
+    list_d_test()
 
 if __name__ == "__main__":
     main()
