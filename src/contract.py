@@ -617,6 +617,19 @@ lazyMonad = monad(lazy, lazyLift, lazyFlatten)
 def lazyPhi(lazyProd):
     return map(lazyLift, list_t(lazyProd()))
 
+# Lazyness and recursive data-types
+
+# list_d(x) = maybe((x, list_d(x)))
+
+#def list_d(c):
+#    return coprods({
+#        'nil':  prodn([]),
+#        'head': prods(c, list_d(c))
+#    })
+# This does not work, as we have to calculate list_d
+# recursively and the thing is going fill up the stack
+# infinitely
+
 def main():
     maybe_test()
     listOfFlatten_test()
