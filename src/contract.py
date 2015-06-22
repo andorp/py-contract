@@ -219,6 +219,26 @@ def prods_test():
     x = int_str_t({'i': 5, 's': "hello"})
     print x
 
+def prod_obj(cs):
+    prod_apply = prods(cs)
+    class Object(object):
+        def __init__(self, *args, **kwargs): 
+            self.__dict__.update(kwargs)
+    def apply(args):
+        object_t(args)
+        return Object(**(prod_apply(args.__dict__)))
+    return apply
+
+class ProdVal:
+    def __init__(self):
+        self.i = 5
+        self.s = 'hello'
+
+def prod_test():
+    int_str_t = prod_obj({'i': int_t, 's': string_t})
+    x = int_str_t(ProdVal())
+    print x.__dict__
+
 # Coproduct
 
 ## Given a list of contracts creates a new contract for a
@@ -712,6 +732,7 @@ def main():
     div_test()
     list_d_test()
     stream_test()
+    prod_test()
 
 if __name__ == "__main__":
     main()
