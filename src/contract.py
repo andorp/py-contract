@@ -221,12 +221,10 @@ def prods_test():
 
 def prod_obj(cs):
     prod_apply = prods(cs)
-    class Object(object):
-        def __init__(self, *args, **kwargs): 
-            self.__dict__.update(kwargs)
     def apply(args):
         object_t(args)
-        return Object(**(prod_apply(args.__dict__)))
+        args.__dict__.update(prod_apply(args.__dict__))
+        return args
     return apply
 
 class ProdVal:
@@ -237,6 +235,7 @@ class ProdVal:
 def prod_test():
     int_str_t = prod_obj({'i': int_t, 's': string_t})
     x = int_str_t(ProdVal())
+    print x.__class__
     print x.__dict__
 
 # Coproduct
