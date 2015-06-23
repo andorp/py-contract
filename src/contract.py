@@ -206,8 +206,11 @@ def prodn_test():
 def prods(cs):
     # Checks if the argument is a dict of contracts
     dict_of(func_t)(cs)
+    length = len(cs)
     def apply(args):
         dict_t(args)
+        if (len(args) != length):
+            raise TypeError("Expected {length} arguments".format(length=length))
         result = {}
         for k in cs:
             result[k] = cs[k](args[k])
@@ -287,13 +290,13 @@ def coprods_test():
 ## Alternative implementation of the maybe monad
 def maybe_c(c):
     return coprods(
-        { 'none': prodn([])
+        { 'none': prods({})
         , 'some': c
         })
-## maybe_c(int_t) accepts ['none', []] or ['some', 4]
+## maybe_c(int_t) accepts ['none', {}] or ['some', 4]
 
 def maybe_c_test():
-    x = maybe_c(int_t)(['none', []])
+    x = maybe_c(int_t)(['none', {}])
     print x
 
 # Pullback
@@ -456,6 +459,9 @@ xorMonoid = monoid(bit_t, xor, K(0))
 
 add = hom(int_t, int_t, int_t)(lambda x, y: x + y)
 addMonoid = monoid(int_t, add, K(0))
+
+mul = hom(int_t, int_t, int_t)(lambda x, y: x * y)
+mulMonoid = monoid(int_t, mul, K(1))
 
 # Monoidal homomorhism
 parity = hom(int_t, bit_t)(lambda x: x % 2)
@@ -714,6 +720,103 @@ def cpPhi(cpProd):
     cpProd(assign)
     return map(cpLift, prod)
 
+# Algebras and control flow
+
+## An algebra for a functor F is a contract c together with a guarded function passing hom(F(c), c)
+
+def algebra(F):
+    def curry(c):
+        return hom(F(c), c)
+    return curry
+
+def maybe_alg_f(mint):
+    if mint[0] == 'none':
+        return 0
+    else:
+        return mint[1]
+
+maybe_alg = algebra(maybe_c)(int_t)(maybe_alg_f)
+
+def maybe_alg_test():
+    print maybe_alg(['some', 78])
+    print maybe_alg(['none', {}])
+
+def getOrElse(default):
+    def maybe_alg_f(mint):
+        if mint[0] == 'none':
+            return default
+        else:
+            return mint[1]
+    return hom(maybe_c(int_t), int_t)(maybe_alg_f)
+
+def getOrElseTest():
+    print getOrElse(15)(['some', 78])
+    print getOrElse(15)(['none', {}])
+
+def list_c(c):
+    return coprods({
+        'nil': prods({}),
+        'cons': prodn([
+            c,
+            lambda tail: list_c(c)(tail)
+        ])
+    })
+
+list_alg = algebra(list_c)
+
+def list_alg_sum_f(lint):
+    if lint[0] == 'nil':
+        return 1
+    else:
+        return lint[1][0] * list_alg_sum_f(lint[1][1])
+
+list_alg_sum = hom(list_c(int_t), int_t)(list_alg_sum_f)
+
+def list_alg_sum_test():
+    x = ['cons', [5, ['cons', [6, ['nil', {}]]]]]
+    print list_alg_sum(x)
+
+def list_alg_monoid(m):
+    def alg(lm):
+        if lm[0] == 'nil':
+            return m['1']()
+        else:
+            return m['*'](lm[1][0], alg(lm[1][1]))
+    return hom(list_c(m['t']), m['t'])(alg)
+
+def list_alg_monoid_test():
+    l = ['cons', [5, ['cons', [6, ['nil', {}]]]]]
+    print list_alg_monoid(addMonoid)(l)
+    print list_alg_monoid(mulMonoid)(l)
+
+
+
+def tree(c):
+    def subtree(branch):
+        return tree(c)(branch)
+    return coprods({
+        'leaf': c,
+        'node': prodn([subtree, subtree])
+    })
+
+tree_alg = algebra(tree)
+
+def tree_alg_monoid(m):
+    def alg(tm):
+        if tm[0] == 'leaf':
+            return tm[1]
+        else:
+            return m['*'](alg(tm[1][0]), alg(tm[1][1]))
+    return tree_alg(m['t'])(alg)
+
+def tree_algebra_monoid_test():
+    t = ['node', [ ['leaf', 3], ['leaf', 4]]]
+    print tree_alg_monoid(addMonoid)(t)
+    print tree_alg_monoid(mulMonoid)(t)
+
+## NOTE 'for' loops are algebras on Natural numbers as Natural number is a coproduct 1 -> N <- N
+## NOTE idea 'while' loops are related to co-natural numbers, composing a stream basically
+
 def main():
     maybe_test()
     listOfFlatten_test()
@@ -732,6 +835,11 @@ def main():
     list_d_test()
     stream_test()
     prod_test()
+    maybe_alg_test()
+    getOrElseTest()
+    list_alg_sum_test()
+    list_alg_monoid_test()
+    tree_algebra_monoid_test()
 
 if __name__ == "__main__":
     main()
