@@ -1,6 +1,6 @@
 # Small introduction to category theory using Python
 
-This is a python version of the "Category Theory for JavaScript programers by Mike Stay"
+This is a python version of the "Category Theory for JavaScript programmers by Mike Stay"
 
 The story is told, by the commits. Please read it from the initial commit.
 
