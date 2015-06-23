@@ -220,10 +220,10 @@ def prods_test():
     print x
 
 def prod_obj(cs):
-    prod_apply = prods(cs)
+    prod = prods(cs)
     def apply(args):
         object_t(args)
-        args.__dict__.update(prod_apply(args.__dict__))
+        args.__dict__.update(prod(args.__dict__))
         return args
     return apply
 
