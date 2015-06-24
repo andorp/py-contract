@@ -198,6 +198,7 @@ def prodn(cs, multi_args_fun=False):
             raise TypeError("Expected {length} arguments".format(length=length))
         result = []
         for i in range(0, length):
+            print i
             result.append(apply_fun(cs[i], args[i]))
         return result
     return apply
@@ -472,15 +473,15 @@ def upTo_test():
 
 # Monoid homomorphism
 
-def equalizer(fs):
+def equalizer(fs, multi_args_fun=False):
     l = len(fs)
     if l < 1:
         raise TypeError("Equalizer can not be defined for empty set of functions")
-    def eq(*args, **kwargs):
+    def eq(x):
         tuple = []
         for i in range(0, l):
-            tuple.append(args)
-        return pullbackn(fs)(tuple)[0]
+            tuple.append(x)
+        return pullbackn(fs, multi_args_fun)(tuple)[0]
     return eq
 
 # Functions between homomorhism, preserves the structure
@@ -515,12 +516,17 @@ parity = hom(int_t, bit_t)(lambda x: x % 2)
 #        '*': equalizer([
 #                lambda x, y: f(m1['*'](x, y)),
 #                lambda x, y: m2['*'](f(x), f(y))
-#            ]),
+#            ], multi_args_fun=True),
 #        '1': equalizer([
-#                lambda: f(m1['1']()),
+#                lambda: f(m1['1']),
 #                m2['1']
 #            ])
 #    }
+
+# TODO: Write test
+def monFun_test():
+    m = monFunc(addMonoid, xorMonoid, parity)
+    print m['1']([])
 
 def monHom(before, after):
     def hom(middle):
@@ -859,30 +865,31 @@ def tree_algebra_monoid_test():
 ## NOTE idea 'while' loops are related to co-natural numbers, composing a stream basically
 
 def main():
-    maybe_test()
-    listOfFlatten_test()
-    maybeFlatten_test()
-    maybe_monad_test()
-    prodn_test()
-    prods_test()
-    coprodn_test()
-    coprods_test()
-    maybe_c_test()
-    hom_test()
-    str_monoid_test()
-    listMonad_test()
-    leq_test()
-    div_test()
-    list_d_test()
-    stream_test()
-    prod_test()
-    maybe_alg_test()
-    getOrElseTest()
-    list_alg_sum_test()
-    list_alg_monoid_test()
-    tree_algebra_monoid_test()
-    coprod_obj_test()
-    pullback_test()
+#    maybe_test()
+#    listOfFlatten_test()
+#    maybeFlatten_test()
+#    maybe_monad_test()
+#    prodn_test()
+#    prods_test()
+#    coprodn_test()
+#    coprods_test()
+#    maybe_c_test()
+#    hom_test()
+#    str_monoid_test()
+#    listMonad_test()
+#    leq_test()
+#    div_test()
+#    list_d_test()
+#    stream_test()
+#    prod_test()
+#    maybe_alg_test()
+#    getOrElseTest()
+#    list_alg_sum_test()
+#    list_alg_monoid_test()
+#    tree_algebra_monoid_test()
+#    coprod_obj_test()
+#    pullback_test()
+    monFun_test()
 
 if __name__ == "__main__":
     main()
