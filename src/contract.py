@@ -509,18 +509,18 @@ parity = hom(int_t, bit_t)(lambda x: x % 2)
 
 # TODO: Check it
 ## Monoidal function
-#def monFunc(m1, m2, f):
-#    return {
-#        't': hom(m1['t'], m2['t'])(f),
-#        '*': equalizer([
-#                lambda x, y: f(m1['*'](x, y)),
-#                lambda x, y: m2['*'](f(x), f(y))
-#            ], multi_args_fun=True),
-#        '1': equalizer([
-#                lambda: f(m1['1']),
-#                m2['1']
-#            ])
-#    }
+def monFunc(m1, m2, f):
+    return {
+        't': hom(m1['t'], m2['t'])(f),
+        '*': equalizer([
+                lambda x, y: f(m1['*'](x, y)),
+                lambda x, y: m2['*'](f(x), f(y))
+            ], multi_args_fun=True),
+        '1': equalizer([
+                lambda: f(m1['1']()),
+                m2['1']
+            ])([])
+    }
 
 def eq_test():
     e = equalizer([
