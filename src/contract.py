@@ -523,11 +523,6 @@ parity = hom(int_t, bit_t)(lambda x: x % 2)
 #            ])
 #    }
 
-# TODO: Write test
-def monFun_test():
-    m = monFunc(addMonoid, xorMonoid, parity)
-    print m['1']([])
-
 def monHom(before, after):
     def hom(middle):
         return {
@@ -865,31 +860,30 @@ def tree_algebra_monoid_test():
 ## NOTE idea 'while' loops are related to co-natural numbers, composing a stream basically
 
 def main():
-#    maybe_test()
-#    listOfFlatten_test()
-#    maybeFlatten_test()
-#    maybe_monad_test()
-#    prodn_test()
-#    prods_test()
-#    coprodn_test()
-#    coprods_test()
-#    maybe_c_test()
-#    hom_test()
-#    str_monoid_test()
-#    listMonad_test()
-#    leq_test()
-#    div_test()
-#    list_d_test()
-#    stream_test()
-#    prod_test()
-#    maybe_alg_test()
-#    getOrElseTest()
-#    list_alg_sum_test()
-#    list_alg_monoid_test()
-#    tree_algebra_monoid_test()
-#    coprod_obj_test()
-#    pullback_test()
-    monFun_test()
+    maybe_test()
+    listOfFlatten_test()
+    maybeFlatten_test()
+    maybe_monad_test()
+    prodn_test()
+    prods_test()
+    coprodn_test()
+    coprods_test()
+    maybe_c_test()
+    hom_test()
+    str_monoid_test()
+    listMonad_test()
+    leq_test()
+    div_test()
+    list_d_test()
+    stream_test()
+    prod_test()
+    maybe_alg_test()
+    getOrElseTest()
+    list_alg_sum_test()
+    list_alg_monoid_test()
+    tree_algebra_monoid_test()
+    coprod_obj_test()
+    pullback_test()
 
 if __name__ == "__main__":
     main()
