@@ -277,7 +277,6 @@ def coprods(cs):
         if choice[0] not in cs:
             raise TypeError("Unknown tag: {tag}".format(tag=choice[0]))
         return [choice[0], cs[choice[0]](choice[1])]
-        pass
     return apply
 
 def coprods_test():
