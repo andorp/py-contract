@@ -198,7 +198,6 @@ def prodn(cs, multi_args_fun=False):
             raise TypeError("Expected {length} arguments".format(length=length))
         result = []
         for i in range(0, length):
-            print i
             result.append(apply_fun(cs[i], args[i]))
         return result
     return apply
@@ -496,7 +495,7 @@ def bit_t(b):
 # Constant Functor
 K = hom(any_t, hom(any_t))(lambda x: lambda: x)
 
-xor = hom(bit_t, bit_t, bit_t)(lambda x, y: bool(x) != bool(b))
+xor = hom(bit_t, bit_t, bit_t)(lambda x, y: bool(x) != bool(y))
 xorMonoid = monoid(bit_t, xor, K(0))
 
 add = hom(int_t, int_t, int_t)(lambda x, y: x + y)
@@ -522,6 +521,13 @@ parity = hom(int_t, bit_t)(lambda x: x % 2)
 #                m2['1']
 #            ])
 #    }
+
+def eq_test():
+    e = equalizer([
+        lambda: parity(addMonoid['1']()),
+        xorMonoid['1']
+    ], multi_args_fun=True)
+    print e([])
 
 def monHom(before, after):
     def hom(middle):
