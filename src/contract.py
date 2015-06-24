@@ -286,6 +286,32 @@ def coprods_test():
     x = int_str_t(['s', "hello"])
     print x
 
+## Coproduct of object is a subclas hiearchy with different values stored
+## in a value variable
+def coprod_obj(cs):
+    dict_of(func_t)(cs)
+    def apply(obj):
+        object_t(obj)
+        obj_class = obj.__class__
+        if obj_class not in cs:
+            raise TypeError("Expected one of {classes}".format(classes=cs))
+        obj.value = cs[obj_class](obj.value)
+        return obj
+    return apply
+
+def coprod_obj_test():
+    class CoProd1(object):
+        def __init__(self):
+            self.value = 5
+    class CoProd2(object):
+        def __init__(self):
+            self.value = 'hello'
+    int_str_t = coprod_obj({CoProd1: int_t, CoProd2: string_t})
+    x = int_str_t(CoProd1())
+    print x.__class__
+    print x.__dict__
+
+
 ## Alternative implementation of the maybe monad
 def maybe_c(c):
     return coprods(
@@ -839,6 +865,7 @@ def main():
     list_alg_sum_test()
     list_alg_monoid_test()
     tree_algebra_monoid_test()
+    coprod_obj_test()
 
 if __name__ == "__main__":
     main()
