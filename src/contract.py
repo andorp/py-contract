@@ -182,17 +182,23 @@ def maybe_monad_test():
 
 ## Given a list of contracts, creates a contract for
 ## a list whose elements satisfy the respective contracts.
-def prodn(cs):
+def prodn(cs, multi_args_fun=False):
     # Checks if the argument is a list of contracts
     list_of(func_t)(cs)
     length = len(cs)
+
+    if multi_args_fun:
+        apply_fun = lambda f, x: f(*x)
+    else:
+        apply_fun = lambda f, x: f(x)
+
     def apply(args):
         list_t(args)
         if (len(args) != length):
             raise TypeError("Expected {length} arguments".format(length=length))
         result = []
         for i in range(0, length):
-            result.append(cs[i](args[i]))
+            result.append(apply_fun(cs[i], args[i]))
         return result
     return apply
 
@@ -330,8 +336,8 @@ def maybe_c_test():
 ## some value under the given function, e.g. given
 ## [f,g], we get a contract for those [x, y] for which
 ## f(x) == g(y)
-def pullbackn(fs):
-    c = prodn(fs)
+def pullbackn(fs, multi_args_fun=False):
+    c = prodn(fs, multi_args_fun)
     length = len(fs)
     def pullback(args):
         list_t(args)
@@ -345,6 +351,17 @@ def pullbackn(fs):
 ## Example of the multiplication of matrices, the pullback
 ## checks if the two matrix can be multiplied.
 ## Exercise
+
+def pullback_test():
+    mul2 = lambda x: x * 2
+    mul1 = lambda x: x
+    p = pullbackn([mul2, mul1])
+    print p([1, 2])
+    mul2m = lambda x, y: x * y
+    mul1m = lambda x, y: y * x
+    pm = pullbackn([mul1m, mul2m], multi_args_fun=True)
+    print pm([[1,2], [1,2]])
+
 
 # Hom functor
 
@@ -459,10 +476,10 @@ def equalizer(fs):
     l = len(fs)
     if l < 1:
         raise TypeError("Equalizer can not be defined for empty set of functions")
-    def eq(x):
+    def eq(*args, **kwargs):
         tuple = []
         for i in range(0, l):
-            tuple.append(x)
+            tuple.append(args)
         return pullbackn(fs)(tuple)[0]
     return eq
 
@@ -865,6 +882,7 @@ def main():
     list_alg_monoid_test()
     tree_algebra_monoid_test()
     coprod_obj_test()
+    pullback_test()
 
 if __name__ == "__main__":
     main()
