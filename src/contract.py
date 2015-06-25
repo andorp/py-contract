@@ -460,6 +460,33 @@ def monad(functor, times, ident):
 
 listMonad = monad(list_of, listOfFlatten, listOfUnit)
 
+def monad_law_one(monad, a):
+    F = monad['t']
+    mu = monad['*']
+    eta = monad['1']
+    if mu(F(mu(a))) != mu(mu(a)):
+       raise Exception("Monad law one is broken")
+
+def monad_law_two(monad, a):
+    F = monad['t']
+    mu = monad['*']
+    eta = monad['1']
+    if mu(eta(a)) != a:
+        raise Exception("Monad law two is broken")
+
+def monad_law_three(monad, a):
+    F = monad['t']
+    mu = monad['*']
+    eta = monad['1']
+    if mu(F(eta(a))) != a:
+        raise Exception("Monad law 3 is broken")
+
+def list_monad_law_test():
+    monad = listMonad(any_t)
+    monad_law_one(monad, [[[1,3], [3]]])
+    monad_law_two(monad, [3])
+    monad_law_three(monad, [5])
+
 def listMonad_test():
     l = listMonad(int_t)
     print l['1'](5)
@@ -905,6 +932,7 @@ def main():
     coprod_obj_test()
     pullback_test()
     monFunc_test()
+    list_monad_law_test()
 
 if __name__ == "__main__":
     main()
