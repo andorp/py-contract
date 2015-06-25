@@ -507,19 +507,18 @@ mulMonoid = monoid(int_t, mul, K(1))
 # Monoidal homomorhism
 parity = hom(int_t, bit_t)(lambda x: x % 2)
 
-# TODO: Check it
 ## Monoidal function
 def monFunc(m1, m2, f):
     return {
         't': hom(m1['t'], m2['t'])(f),
-        '*': equalizer([
+        '*': lambda a, b: equalizer([
                 lambda x, y: f(m1['*'](x, y)),
                 lambda x, y: m2['*'](f(x), f(y))
-            ], multi_args_fun=True),
+            ], multi_args_fun=True)([a, b]),
         '1': equalizer([
                 lambda: f(m1['1']()),
                 m2['1']
-            ])([])
+            ], multi_args_fun=True)([])
     }
 
 def eq_test():
@@ -528,6 +527,11 @@ def eq_test():
         xorMonoid['1']
     ], multi_args_fun=True)
     print e([])
+
+def monFunc_test():
+    m = monFunc(addMonoid, xorMonoid, parity)
+    print m['1']
+    print m['*'](1, 1)
 
 def monHom(before, after):
     def hom(middle):
@@ -890,6 +894,7 @@ def main():
     tree_algebra_monoid_test()
     coprod_obj_test()
     pullback_test()
+    monFunc_test()
 
 if __name__ == "__main__":
     main()
