@@ -401,13 +401,23 @@ def monoid(set, times, ident):
         '1': ident
     })
 
-def test_mon_assoc(mon, a, b, c):
+def monoid_associative_law(mon, a, b, c):
     a = mon['t'](a)
     b = mon['t'](b)
     c = mon['t'](c)
     if mon['*'](a, mon['*'](b, c)) != \
        mon['*'](mon['*'](a, b), c):
        raise Exception("Not associative")
+
+def monoid_left_identity_law(mon, a):
+    a = mon['t'](a)
+    if mon['*'](mon['1'], a) != a:
+        raise Exception("Not a left identity")
+
+def monoid_right_identity_law(mon, a):
+    a = mon['t'](a)
+    if mon['*'](a, mon['1']) != a:
+        raise Exception("Not a right identity")
 
 concat = monoid(
     string_t,
