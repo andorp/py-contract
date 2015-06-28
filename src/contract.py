@@ -500,8 +500,10 @@ def flat_map(monad):
 def flat_map_test():
     l = listMonad(any_t)
     bind = flat_map(l)
-    y = bind([1,2,3], lambda x: [2*x])
-    print y
+    z = bind(range(0,5), lambda x: 
+        bind(upTo(x)   , lambda y:
+            [y]))
+    print z
 
 # UpTo Example
 
