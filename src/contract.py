@@ -452,7 +452,7 @@ def monad(functor, times, ident):
                 ## It is more general operation putting two things together, it is not necessary pairing
                 '1': hom(no_times(functor)(t), functor(t))
             })({
-                't': functor(t),
+                't': functor,
                 '*': times(t),
                 '1': ident(t)
             })
@@ -464,11 +464,10 @@ def monad_law_one(monad, a):
     F = monad['t']
     mu = monad['*']
     eta = monad['1']
-    if mu(F(mu(a))) != mu(mu(a)):
+    if mu(F(mu)(a)) != mu(mu(a)):
        raise Exception("Monad law one is broken")
 
 def monad_law_two(monad, a):
-    F = monad['t']
     mu = monad['*']
     eta = monad['1']
     if mu(eta(a)) != a:
@@ -478,7 +477,7 @@ def monad_law_three(monad, a):
     F = monad['t']
     mu = monad['*']
     eta = monad['1']
-    if mu(F(eta(a))) != a:
+    if mu(F(eta)(a)) != a:
         raise Exception("Monad law 3 is broken")
 
 def list_monad_law_test():
@@ -491,6 +490,18 @@ def listMonad_test():
     l = listMonad(int_t)
     print l['1'](5)
     print l['*']([[2,3],[4]])
+
+def flat_map(monad):
+    def fm(m, k):
+        F = monad['t']
+        return monad['*'](F(k)(m))
+    return fm
+
+def flat_map_test():
+    l = listMonad(any_t)
+    bind = flat_map(l)
+    y = bind([1,2,3], lambda x: [2*x])
+    print y
 
 # UpTo Example
 
@@ -933,6 +944,7 @@ def main():
     pullback_test()
     monFunc_test()
     list_monad_law_test()
+    flat_map_test()
 
 if __name__ == "__main__":
     main()
