@@ -498,12 +498,16 @@ def flat_map(monad):
     return fm
 
 def flat_map_test():
-    l = listMonad(any_t)
-    bind = flat_map(l)
+    bind = flat_map(listMonad(any_t))
     z = bind(range(0,5), lambda x: 
         bind(upTo(x)   , lambda y:
             [y]))
     print z
+
+def unit(monad):
+    def u(x):
+        return (monad['1'])(x)
+    return u
 
 # UpTo Example
 
