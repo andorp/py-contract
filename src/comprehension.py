@@ -1,5 +1,5 @@
 
-from contract import just, nothing
+from contract import just, nothing, try_ok, try_error
 from ast import *
 from uncompile import monadic
 
@@ -26,10 +26,25 @@ def g(z):
          ]
     print xs
 
+def try_div(x, y):
+    if y == 0:
+        return try_error("divisor was zero")
+    else:
+        return try_ok(x / y)
+
+@monadic("try_monad")
+def h(z):
+    xs = [ y for x in try_ok(4)
+             for y in try_div(x, z)
+         ]
+    print xs
+
 def main():
     f()
     g(2)
     g(0)
+    h(2)
+    h(0)
 
 if __name__ == "__main__":
     main()

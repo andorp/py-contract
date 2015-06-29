@@ -14,7 +14,7 @@ import types
 def type_of(t):
     def contract(x):
         if not isinstance(x, t):
-            raise TypeError('{type} is expected found {found}'.format(type=t, found=type(x)))
+            raise TypeError('{type} is expected found {found}: {value}'.format(type=t, found=type(x), value=x))
         return x
     return contract
 
@@ -925,6 +925,60 @@ def tree_algebra_monoid_test():
 ## NOTE 'for' loops are algebras on Natural numbers as Natural number is a coproduct 1 -> N <- N
 ## NOTE idea 'while' loops are related to co-natural numbers, composing a stream basically
 
+# Try monad
+
+def either(left, right):
+    return coprods({'left': left, 'right':right})
+
+try_of = either(string_t, any_t)
+
+def try_functor(c):
+    def fmap(e):
+        try_of(e)
+        if e[0] == 'left':
+            return e
+        else:
+            return ['right', c(e[1])]
+    return fmap
+
+def try_unit(c):
+    def wrap(x):
+        x = no_times(try_functor)(c)(x)
+        return once(try_functor)(c)(['right', x])
+    return wrap
+
+def try_flatten(c):
+    def flatten(eex):
+        eex = twice(try_functor)(c)(eex)
+        result = None
+        if eex[0] == 'left':
+            result = eex
+        else:
+            result = eex[1]
+        return once(try_functor)(c)(result)
+    return flatten
+
+try_monad = monad(try_functor, try_flatten, try_unit)
+
+def try_error(msg):
+    return try_of(['left', msg])
+
+def try_ok(x):
+    return try_of(['right', x])
+
+def try_monad_test():
+    monad = try_monad(any_t)
+    monad_law_one(monad, ['left', 'error_msg'])
+    monad_law_two(monad, ['left', 'error_msg'])
+    monad_law_three(monad, ['left', 'error_msg'])
+    monad_law_one(monad, ['right', ['right', ['right', 3]]])
+    monad_law_two(monad, ['right', ['right', ['right', 3]]])
+    monad_law_three(monad, ['right', ['right', ['right', 3]]])
+    monad_law_one(monad, ['right', ['left', 'error_msg']])
+    monad_law_two(monad, ['right', ['left', 'error_msg']])
+    monad_law_three(monad, ['right', ['left', 'error_msg']])
+
+
 def main():
     maybe_test()
     listOfFlatten_test()
@@ -953,6 +1007,7 @@ def main():
     monFunc_test()
     list_monad_law_test()
     flat_map_test()
+    try_monad_test()
 
 if __name__ == "__main__":
     main()
