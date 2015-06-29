@@ -107,7 +107,7 @@ def parse_snippet(source, filename, mode, flags, firstlineno, privateprefix_igno
     ast.increment_lineno(a, firstlineno - 2)
     return a
 
-def monadic(monad_name):
+def monadic_comp(monad_name):
     """ Decorator to apply a NodeTransformer to a single function """
     def wrapper(func):
         # uncompile function
@@ -117,6 +117,25 @@ def monadic(monad_name):
         tree = parse_snippet(*unc)
         MonadicFunctionDef(monad_name).visit(tree)
         MonadicListComp().visit(tree)
+        ast.fix_missing_locations(tree)
+        unc[0] = tree
+
+        # recompile and patch function's code
+        func.func_code = recompile(*unc)
+        return func
+
+    return wrapper
+
+def monadic(monad_name):
+    """ Decorator to apply a NodeTransformer to a single function """
+    def wrapper(func):
+        # uncompile function
+        unc = uncompile(func.func_code)
+
+        # convert to ast and apply visitor
+        tree = parse_snippet(*unc)
+        MonadicStatement().visit(tree)
+        MonadicFunctionDef(monad_name).visit(tree)
         ast.fix_missing_locations(tree)
         unc[0] = tree
 
@@ -191,6 +210,64 @@ class MonadicFunctionDef(ast.NodeTransformer):
 
         node.body = [import_, bind, unit] + node.body
         return node
+
+
+class MonadicStatement(ast.NodeTransformer):
+
+    def visit_FunctionDef(self, node):
+        def create_bind(stmts):
+            l = len(stmts)
+            s = stmts[0]
+            if l == 1:
+                return func_call(name('unit'), args=[get_return_expr(s)])
+            if l > 1:
+                call = get_assign_call(s)
+                la = ast.Lambda(args=ast.arguments(args=[get_assign_name(s)], defaults=[]),
+                                body=create_bind(stmts[1:]))
+                return func_call(name('bind'), [call, la])
+            raise Exception('Empty statement for list comprehension')
+        call = create_bind(node.body)
+        newnode = ast.Return(call)
+        ast.copy_location(newnode, node)
+        ast.fix_missing_locations(newnode)
+        node.body=[newnode]
+        return node
+
+# Helpers for assign, expr, return ast handlers
+
+def get_assign_name(stmt):
+    def get_name(a):
+        a.targets[0].cxt=ast.Load()
+        return a.targets[0]
+    # Algebra is like inversion of control
+    return aer_algebra(get_name, class_error, class_error, stmt)
+
+def get_assign_call(stmt):
+    def get(a):
+        if a.value.__class__ is ast.Call:
+            return a.value
+        else:
+            raise TypeError("No call object is found")
+    return aer_algebra(get, class_error, class_error, stmt)
+
+def get_return_expr(stmt):
+    def get_expr(r):
+        return r.value
+    return aer_algebra(class_error, class_error, get_expr, stmt)
+
+def class_error(s):
+    raise Exception("Non assignment type {t}".format(t=s.__class__))
+
+def aer_algebra(a, e, r, stmt):
+    sc = stmt.__class__
+    if sc == ast.Assign:
+        return a(stmt)
+    elif sc == ast.Expr:
+        return e(stmt)
+    elif sc == ast.Return:
+        return r(stmt)
+    else:
+        raise TypeError("Unexpected statement {type}".format(type=sc))
 
 # AST Helpers
 
