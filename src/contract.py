@@ -114,7 +114,7 @@ def listOfUnit(c):
 def maybeUnit(c):
     def wrap(x):
         x = no_times(maybe)(c)(x)
-        return once(maybe)(c)(some(x))
+        return once(maybe)(c)(just(x))
     return wrap
 
 def listOfFlatten(c):
@@ -508,6 +508,8 @@ def unit(monad):
     def u(x):
         return (monad['1'])(x)
     return u
+
+maybeMonad = monad(maybe, maybeFlatten, maybeUnit)
 
 # UpTo Example
 

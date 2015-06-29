@@ -1,5 +1,5 @@
 
-from contract import listMonad
+from contract import just, nothing
 from ast import *
 from uncompile import monadic
 
@@ -13,8 +13,23 @@ def f():
          ]
     print xs
 
+def div(x, y):
+    if y == 0:
+        return nothing
+    else:
+        return just(x / y)
+
+@monadic("maybeMonad")
+def g(z):
+    xs = [ y for x in just(4)
+             for y in div(x, z)
+         ]
+    print xs
+
 def main():
     f()
+    g(2)
+    g(0)
 
 if __name__ == "__main__":
     main()
