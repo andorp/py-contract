@@ -242,10 +242,19 @@ def get_assign_name(stmt):
     # Algebra is like inversion of control
     return aer_algebra(get_name, class_error, class_error, stmt)
 
+value_expressions = [ast.BoolOp, ast.BinOp, ast.UnaryOp, ast.Dict, ast.Set, ast.ListComp, ast.SetComp,
+                     ast.DictComp, ast.Num, ast.Str, ast.Subscript, ast.List, ast.Tuple]
+
+def is_value_expr(expr):
+    return expr.__class__ in value_expressions
+
 def get_assign_call(stmt):
     def get(a):
-        if a.value.__class__ is ast.Call:
+        vclass = a.value.__class__
+        if vclass is ast.Call:
             return a.value
+        elif is_value_expr(a.value):
+            return ast.Call(func=name('unit'), args=[a.value], keywords=[])
         else:
             raise TypeError("No call object is found")
     return aer_algebra(get, class_error, class_error, stmt)

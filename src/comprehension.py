@@ -49,8 +49,8 @@ def fb():
 def hb(z):
     x = try_ok(4)
     y = try_div(x, z)
-    return y
-
+    w = 3
+    return (y + w)
 
 def main():
     f()
