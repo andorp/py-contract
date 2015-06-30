@@ -50,6 +50,7 @@ def hb(z):
     x = try_ok(4)
     y = try_div(x, z)
     w = 3
+    o = normal(fb())
     return (y + w)
 
 def main():

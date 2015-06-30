@@ -208,7 +208,14 @@ class MonadicFunctionDef(ast.NodeTransformer):
         )
         ast.fix_missing_locations(unit)
 
-        node.body = [import_, bind, unit] + node.body
+        ## non_monadic = unit
+        normal = ast.Assign(
+            [name_store('normal')],
+            name('unit')
+        )
+        ast.fix_missing_locations(normal)
+
+        node.body = [import_, bind, unit, normal] + node.body
         return node
 
 
