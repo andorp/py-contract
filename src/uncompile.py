@@ -228,8 +228,8 @@ class MonadicStatement(ast.NodeTransformer):
             if l == 1:
                 return func_call(name('unit'), args=[get_return_expr(s)])
             if l > 1:
-                call = get_assign_call(s)
-                la = ast.Lambda(args=ast.arguments(args=[get_assign_name(s)], defaults=[]),
+                call = get_call(s)
+                la = ast.Lambda(args=ast.arguments(args=[get_name(s)], defaults=[]),
                                 body=create_bind(stmts[1:]))
                 return func_call(name('bind'), [call, la])
             raise Exception('Empty statement for list comprehension')
@@ -242,12 +242,14 @@ class MonadicStatement(ast.NodeTransformer):
 
 # Helpers for assign, expr, return ast handlers
 
-def get_assign_name(stmt):
-    def get_name(a):
+def get_name(stmt):
+    def get_assign_name(a):
         a.targets[0].cxt=ast.Load()
         return a.targets[0]
+    def get_expr_name(e):
+        return name('_')
     # Algebra is like inversion of control
-    return aer_algebra(get_name, class_error, class_error, stmt)
+    return aer_algebra(get_assign_name, get_expr_name, class_error, stmt)
 
 value_expressions = [ast.BoolOp, ast.BinOp, ast.UnaryOp, ast.Dict, ast.Set, ast.ListComp, ast.SetComp,
                      ast.DictComp, ast.Num, ast.Str, ast.Subscript, ast.List, ast.Tuple]
@@ -255,8 +257,8 @@ value_expressions = [ast.BoolOp, ast.BinOp, ast.UnaryOp, ast.Dict, ast.Set, ast.
 def is_value_expr(expr):
     return expr.__class__ in value_expressions
 
-def get_assign_call(stmt):
-    def get(a):
+def get_call(stmt):
+    def get_assign_call(a):
         vclass = a.value.__class__
         if vclass is ast.Call:
             return a.value
@@ -264,7 +266,13 @@ def get_assign_call(stmt):
             return ast.Call(func=name('unit'), args=[a.value], keywords=[])
         else:
             raise TypeError("No call object is found")
-    return aer_algebra(get, class_error, class_error, stmt)
+    def get_expr_call(e):
+        vclass = e.value.__class__
+        if vclass is ast.Call:
+            return e.value
+        else:
+            raise TypeError("No call object is found")
+    return aer_algebra(get_assign_call, get_expr_call, class_error, stmt)
 
 def get_return_expr(stmt):
     def get_expr(r):

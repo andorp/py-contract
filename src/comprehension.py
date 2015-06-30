@@ -47,8 +47,9 @@ def fb():
 
 @monadic("try_monad")
 def hb(z):
-    x = try_ok(4)
+    x = 4
     y = try_div(x, z)
+    try_div(x, 1)
     w = 3
     o = normal(fb())
     return (y + w)
