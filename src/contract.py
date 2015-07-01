@@ -458,7 +458,8 @@ def monad(functor, times, ident):
             })
     return monad_t
 
-listMonad = monad(list_of, listOfFlatten, listOfUnit)
+def listMonad(t):
+    return monad(list_of, listOfFlatten, listOfUnit)(t)
 
 def monad_law_one(monad, a):
     F = monad['t']
@@ -509,7 +510,8 @@ def unit(monad):
         return (monad['1'])(x)
     return u
 
-maybeMonad = monad(maybe, maybeFlatten, maybeUnit)
+def maybeMonad(t):
+    return monad(maybe, maybeFlatten, maybeUnit)(t)
 
 # UpTo Example
 
@@ -745,7 +747,8 @@ lazyLift = K
 def lazyFlatten(lazyLazyX):
     return lazyLazyX()
 
-lazyMonad = monad(lazy, lazyLift, lazyFlatten)
+def lazyMonad(t):
+    return monad(lazy, lazyLift, lazyFlatten)(t)
 
 def lazyPhi(lazyProd):
     return map(lazyLift, list_t(lazyProd()))
@@ -813,7 +816,8 @@ def cpFlatten(cpCpX): # (((A -> Z) -> Z) -> Z) -> Z
     # k : X -> Z
     return lambda k: cpCpX(lambda l: l(k))
 
-cpMonad = monad(cp, cpLift, cpFlatten)
+def cpMonad(t):
+    return monad(cp, cpLift, cpFlatten)(t)
 
 def cpChi(k):
     return \
@@ -958,7 +962,8 @@ def try_flatten(c):
         return once(try_functor)(c)(result)
     return flatten
 
-try_monad = monad(try_functor, try_flatten, try_unit)
+def try_monad(t):
+    return monad(try_functor, try_flatten, try_unit)(t)
 
 def try_error(msg):
     return try_of(['left', msg])

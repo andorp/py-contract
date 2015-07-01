@@ -20,6 +20,7 @@ import ast, inspect, re
 import astdump
 from types import CodeType as code, FunctionType as function
 from contract import any_t
+import inspect
 
 import __future__
 PyCF_MASK = sum(v for k, v in vars(__future__).items() if k.startswith('CO_FUTURE'))
@@ -107,15 +108,19 @@ def parse_snippet(source, filename, mode, flags, firstlineno, privateprefix_igno
     ast.increment_lineno(a, firstlineno - 2)
     return a
 
-def monadic_comp(monad_name):
-    """ Decorator to apply a NodeTransformer to a single function """
+def monadic_comp(monad):
+    """ Decorator that creates helper functions within the function body and transforms
+        all the list comprehension into a monadic expression """
+    module_name = inspect.getmodule(monad).__name__
+    monad_name = monad.__name__
+
     def wrapper(func):
         # uncompile function
         unc = uncompile(func.func_code)
 
         # convert to ast and apply visitor
         tree = parse_snippet(*unc)
-        MonadicFunctionDef(monad_name).visit(tree)
+        MonadicFunctionDef(module_name, monad_name).visit(tree)
         MonadicListComp().visit(tree)
         ast.fix_missing_locations(tree)
         unc[0] = tree
@@ -126,8 +131,12 @@ def monadic_comp(monad_name):
 
     return wrapper
 
-def monadic(monad_name):
-    """ Decorator to apply a NodeTransformer to a single function """
+def monadic(monad):
+    """ Decorator that creates helper functions within the function body and transforms
+        it into a monadic expression """
+    module_name = inspect.getmodule(monad).__name__
+    monad_name = monad.__name__
+
     def wrapper(func):
         # uncompile function
         unc = uncompile(func.func_code)
@@ -135,7 +144,7 @@ def monadic(monad_name):
         # convert to ast and apply visitor
         tree = parse_snippet(*unc)
         MonadicStatement().visit(tree)
-        MonadicFunctionDef(monad_name).visit(tree)
+        MonadicFunctionDef(module_name, monad_name).visit(tree)
         ast.fix_missing_locations(tree)
         unc[0] = tree
 
@@ -181,18 +190,24 @@ class MonadicListComp(ast.NodeTransformer):
 
 
 class MonadicFunctionDef(ast.NodeTransformer):
-    """ Import the necessary functions to create monad abstractions """
+    """ Import and declare the necessary functions to create monad abstractions """
 
-    def __init__(self, monad_name):
+    def __init__(self, module_name, monad_name):
+        self.module_name = module_name
         self.monad_name = monad_name
 
     def visit_FunctionDef(self, node):
         monad_any_t = func_call(name(self.monad_name), [name('any_t')])
 
         ## from monad_name, any_t, flat_map import contract
-        import_ = ast.ImportFrom(module="contract",
-                                 names=map(alias, ["any_t", "flat_map", "unit", self.monad_name]))
-        ast.fix_missing_locations(import_)
+        import_contract = ast.ImportFrom(module="contract",
+                                         names=map(alias, ["any_t", "flat_map", "unit"]))
+        ast.fix_missing_locations(import_contract)
+
+        ## from monad_name, any_t, flat_map import contract
+        import_monad = ast.ImportFrom(module=self.module_name,
+                                         names=map(alias, [self.monad_name]))
+        ast.fix_missing_locations(import_monad)
 
         ## bind = flat_map(monad_name(any_t))
         bind = ast.Assign(
@@ -215,11 +230,12 @@ class MonadicFunctionDef(ast.NodeTransformer):
         )
         ast.fix_missing_locations(normal)
 
-        node.body = [import_, bind, unit, normal] + node.body
+        node.body = [import_contract, import_monad, bind, unit, normal] + node.body
         return node
 
 
 class MonadicStatement(ast.NodeTransformer):
+    """ Transforms the function body into a monadic expression """
 
     def visit_FunctionDef(self, node):
         def create_bind(stmts):

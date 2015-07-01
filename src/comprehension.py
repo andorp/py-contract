@@ -1,12 +1,13 @@
 
-from contract import just, nothing, try_ok, try_error
+from contract import just, nothing, try_ok, try_error, try_monad, listMonad, maybeMonad
 from ast import *
 from uncompile import monadic, monadic_comp
+import inspect
 
 def l_to_n(n):
     return range(0, n)
 
-@monadic_comp("listMonad")
+@monadic_comp(listMonad)
 def f():
     xs = [ y for x in l_to_n(5) 
              for y in l_to_n(x)
@@ -19,7 +20,7 @@ def div(x, y):
     else:
         return just(x / y)
 
-@monadic_comp("maybeMonad")
+@monadic_comp(maybeMonad)
 def g(z):
     xs = [ y for x in just(4)
              for y in div(x, z)
@@ -32,20 +33,20 @@ def try_div(x, y):
     else:
         return try_ok(x / y)
 
-@monadic_comp("try_monad")
+@monadic_comp(try_monad)
 def h(z):
     xs = [ y for x in try_ok(4)
              for y in try_div(x, z)
          ]
     print xs
 
-@monadic("listMonad")
+@monadic(listMonad)
 def fb():
     x = l_to_n(5)
     y = l_to_n(x)
     return y
 
-@monadic("try_monad")
+@monadic(try_monad)
 def hb(z):
     x = 4
     y = try_div(x, z)
