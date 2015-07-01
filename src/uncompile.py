@@ -199,12 +199,12 @@ class MonadicFunctionDef(ast.NodeTransformer):
     def visit_FunctionDef(self, node):
         monad_any_t = func_call(name(self.monad_name), [name('any_t')])
 
-        ## from monad_name, any_t, flat_map import contract
+        ## from contract import any_t, flat_map
         import_contract = ast.ImportFrom(module="contract",
                                          names=map(alias, ["any_t", "flat_map", "unit"]))
         ast.fix_missing_locations(import_contract)
 
-        ## from monad_name, any_t, flat_map import contract
+        ## from monad_module import monad_name
         import_monad = ast.ImportFrom(module=self.module_name,
                                          names=map(alias, [self.monad_name]))
         ast.fix_missing_locations(import_monad)
