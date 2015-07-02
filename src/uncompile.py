@@ -265,7 +265,7 @@ def get_name(stmt):
     def get_expr_name(e):
         return name('_')
     # Algebra is like inversion of control
-    return aer_algebra(get_assign_name, get_expr_name, class_error, stmt)
+    return aer_algebra(get_assign_name, get_expr_name, class_error('name'), stmt)
 
 value_expressions = [ast.BoolOp, ast.BinOp, ast.UnaryOp, ast.Dict, ast.Set, ast.ListComp, ast.SetComp,
                      ast.DictComp, ast.Num, ast.Str, ast.Subscript, ast.List, ast.Tuple]
@@ -290,20 +290,22 @@ def get_expr_call(e):
         raise TypeError("No call object is found")
 
 def get_call(stmt):
-    return aer_algebra(get_assign_call, get_expr_call, class_error, stmt)
+    return aer_algebra(get_assign_call, get_expr_call, class_error('call'), stmt)
 
 def get_return_expr(stmt):
     def get_expr(r):
         return r.value
-    return aer_algebra(class_error, class_error, get_expr, stmt)
+    return aer_algebra(class_error('return'), class_error('return'), get_expr, stmt)
 
 def final_call(stmt):
     def return_call(s):
         return func_call(name('unit'), args=[get_return_expr(s)])
     return aer_algebra(get_assign_call, get_expr_call, return_call, stmt)
 
-def class_error(s):
-    raise Exception("Non assignment type {t}".format(t=s.__class__))
+def class_error(e):
+    def check(s):
+        raise Exception("Non {expected} type {t}".format(expected=e, t=s.__class__))
+    return check
 
 def aer_algebra(a, e, r, stmt):
     sc = stmt.__class__
