@@ -242,7 +242,7 @@ class MonadicStatement(ast.NodeTransformer):
             l = len(stmts)
             s = stmts[0]
             if l == 1:
-                return func_call(name('unit'), args=[get_return_expr(s)])
+                return final_call(s)
             if l > 1:
                 call = get_call(s)
                 la = ast.Lambda(args=ast.arguments(args=[get_name(s)], defaults=[]),
@@ -273,27 +273,34 @@ value_expressions = [ast.BoolOp, ast.BinOp, ast.UnaryOp, ast.Dict, ast.Set, ast.
 def is_value_expr(expr):
     return expr.__class__ in value_expressions
 
+def get_assign_call(a):
+    vclass = a.value.__class__
+    if vclass is ast.Call:
+        return a.value
+    elif is_value_expr(a.value):
+        return ast.Call(func=name('unit'), args=[a.value], keywords=[])
+    else:
+        raise TypeError("No call object is found")
+
+def get_expr_call(e):
+    vclass = e.value.__class__
+    if vclass is ast.Call:
+        return e.value
+    else:
+        raise TypeError("No call object is found")
+
 def get_call(stmt):
-    def get_assign_call(a):
-        vclass = a.value.__class__
-        if vclass is ast.Call:
-            return a.value
-        elif is_value_expr(a.value):
-            return ast.Call(func=name('unit'), args=[a.value], keywords=[])
-        else:
-            raise TypeError("No call object is found")
-    def get_expr_call(e):
-        vclass = e.value.__class__
-        if vclass is ast.Call:
-            return e.value
-        else:
-            raise TypeError("No call object is found")
     return aer_algebra(get_assign_call, get_expr_call, class_error, stmt)
 
 def get_return_expr(stmt):
     def get_expr(r):
         return r.value
     return aer_algebra(class_error, class_error, get_expr, stmt)
+
+def final_call(stmt):
+    def return_call(s):
+        return func_call(name('unit'), args=[get_return_expr(s)])
+    return aer_algebra(get_assign_call, get_expr_call, return_call, stmt)
 
 def class_error(s):
     raise Exception("Non assignment type {t}".format(t=s.__class__))
